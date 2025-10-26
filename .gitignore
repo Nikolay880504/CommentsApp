@@ -6,9 +6,6 @@
 *.suo
 publish/
 .dockerignore
-
-appsettings.*.user.json
-appsettings.Local.json
 **/.secrets/
 
 
