@@ -12,12 +12,19 @@ namespace CommentsApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public int UserId { get; set; } 
-        public User User { get; set; } = null!; 
-
         public int? ParentCommentId { get; set; }
-        public Comment? ParentComment { get; set; } 
-        public ICollection<Comment> Replies { get; set; } = new List<Comment>();
+        public Comment? ParentComment { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public string UserName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Url]
+        public string? HomePage { get; set; }
 
         public string? FilePath { get; set; } 
     }
