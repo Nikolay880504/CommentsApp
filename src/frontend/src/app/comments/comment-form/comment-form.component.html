@@ -1,0 +1,141 @@
+<form [formGroup]="commentForm" (ngSubmit)="onSubmit()" enctype="multipart/form-data" class="space-y-6 p-6 bg-white rounded-xl shadow-2xl max-w-2xl mx-auto my-8">
+
+  <!-- Заголовок и режим ответа -->
+  <h2 class="text-3xl font-extrabold text-gray-900 border-b pb-3">
+    {{ parentCommentId && parentCommentId > 0 ? 'Ответ на комментарий #' + parentCommentId : 'Добавить комментарий' }}
+  </h2>
+
+  @if (parentCommentId && parentCommentId > 0) {
+    <div class="p-3 bg-indigo-50 text-indigo-700 border-l-4 border-indigo-500 rounded-md shadow-inner">
+      Вы отвечаете на комментарий с ID: <strong>#{{ parentCommentId }}</strong>.
+      <button 
+        type="button" 
+        (click)="formReset.emit()" 
+        class="ml-2 text-sm font-semibold text-indigo-600 hover:underline transition duration-150">
+        Отменить ответ
+      </button>
+    </div>
+  }
+
+  <!-- Группа полей -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Имя -->
+    <div>
+      <label for="UserName" class="block text-sm font-medium text-gray-700">
+        Имя пользователя <span class="text-red-500">*</span>
+      </label>
+      <input id="UserName" type="text" formControlName="userName"
+        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        [ngClass]="{'border-red-500 ring-1 ring-red-200': getControl('UserName')?.invalid && getControl('UserName')?.touched}">
+      
+      @if (getControl('UserName')?.invalid && getControl('UserName')?.touched) {
+        <div class="text-xs text-red-500 mt-1">
+          @if (getControl('UserName')?.errors?.['required']) { Обязательное поле. }
+          @else if (getControl('UserName')?.errors?.['pattern']) { Только латинские буквы и цифры. }
+        </div>
+      }
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label for="Email" class="block text-sm font-medium text-gray-700">
+        Email <span class="text-red-500">*</span>
+      </label>
+      <input id="Email" type="email" formControlName="email"
+        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        [ngClass]="{'border-red-500 ring-1 ring-red-200': getControl('Email')?.invalid && getControl('Email')?.touched}">
+      
+      @if (getControl('Email')?.invalid && getControl('Email')?.touched) {
+        <div class="text-xs text-red-500 mt-1">
+          @if (getControl('Email')?.errors?.['required']) { Поле Email обязательно. }
+          @else if (getControl('Email')?.errors?.['email']) { Некорректный формат email. }
+        </div>
+      }
+    </div>
+
+   <!-- Сайт --> 
+  <div> <label for="HomePage" class="block text-sm font-medium text-gray-700"> 
+    Сайт (URL) 
+  </label> 
+  <input id="HomePage" type="url" formControlName="homePage"
+
+        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        [ngClass]="{'border-red-500 ring-1 ring-red-200': getControl('homePage')?.invalid && getControl('homePage')?.touched && getControl('homePage')?.value}">
+      
+      @if (getControl('homePage')?.errors?.['pattern'] && getControl('homePage')?.touched && getControl('homePage')?.value) {
+        <div class="text-xs text-red-500 mt-1">Введите корректный URL.</div>
+      }
+    </div>
+  </div>
+
+  <!-- Текст комментария -->
+  <div>
+    <label for="TextMessage" class="block text-sm font-medium text-gray-700">
+      Ваш комментарий <span class="text-red-500">*</span>
+    </label>
+    <textarea id="Text" formControlName="textMessage" rows="6"
+      class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:border-indigo-500 focus:ring-indigo-500"
+      [ngClass]="{'border-red-500 ring-1 ring-red-200': getControl('Text')?.invalid && getControl('Text')?.touched}">
+    </textarea>
+
+    @if (getControl('Text')?.errors?.['required'] && getControl('Text')?.touched) {
+      <div class="text-xs text-red-500 mt-1">Введите текст комментария.</div>
+    }
+  </div>
+
+  <!-- CAPTCHA -->
+  <div class="p-4 border border-indigo-200 rounded-lg bg-gray-50">
+    <label class="block text-base font-semibold text-gray-800 mb-3">
+      Подтвердите, что вы не робот <span class="text-red-500">*</span>
+    </label>
+
+    @if (isLoading) {
+      <div class="flex justify-center items-center h-20 text-indigo-600">
+        <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4zm2 5.29A7.96 7.96 0 014 12H0c0 3.04 1.13 5.82 3 7.94l3-2.65z"></path>
+        </svg>
+        Загрузка CAPTCHA...
+      </div>
+    } @else {
+      @if (captchaImageUrl) {
+        <div class="flex flex-col items-center">
+          <img [src]="captchaImageUrl" alt="CAPTCHA Image"
+               class="border border-gray-400 rounded-md shadow-inner mb-3 max-w-full h-auto">
+        </div>
+      }
+
+      <input type="text" formControlName="captchaInputText"
+             class="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-2 text-lg focus:ring-indigo-500 focus:border-indigo-500"
+             placeholder="Введите символы с картинки">
+
+      <button type="button" (click)="loadNewCaptcha()"
+              class="mt-2 text-sm text-indigo-600 hover:text-indigo-800 transition duration-150 font-medium">
+        {{ captchaImageUrl ? 'Перезагрузить CAPTCHA' : 'Попробовать загрузить снова' }}
+      </button>
+
+      @if (submitError && !captchaImageUrl) {
+        <div class="mt-2 text-sm text-red-500">{{ submitError }}</div>
+      }
+    }
+  </div>
+
+  <!-- Кнопка -->
+  <button type="submit"
+          [disabled]="commentForm.invalid || isLoading || !captchaImageUrl"
+          class="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-xl hover:bg-indigo-700 disabled:opacity-50 transition duration-300 transform hover:scale-[1.01]">
+    @if (!isLoading) {
+      <span>Отправить комментарий</span>
+    } @else {
+      <span>Отправка...</span>
+    }
+  </button>
+
+  @if (commentForm.invalid && commentForm.touched && !isLoading) {
+    <div class="text-sm text-red-600 p-2 bg-red-50 rounded-md">
+      Пожалуйста, исправьте ошибки и заполните все обязательные поля (*).
+    </div>
+  }
+
+</form>

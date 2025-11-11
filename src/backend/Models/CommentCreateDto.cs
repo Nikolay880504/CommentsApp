@@ -15,17 +15,21 @@ namespace CommentsApp.Models
 
         [Required(ErrorMessage = "Message text is required.")]
         [StringLength(1000, ErrorMessage = "Message cannot exceed 1000 characters.")]
-        public string Text { get; set; } = string.Empty;
+        public string TextMessage { get; set; } = string.Empty;
 
         public int? ParentCommentId { get; set; }
-        
+
+        [Url]
+        public string? HomePage { get; set; }
+
         public IFormFile? UploadedFile { get; set; }
 
-        [Required(ErrorMessage = "Please enter the CAPTCHA code.")]
-        public string captchaInputText { get; set; } = string.Empty;
+         [Required]
+        public string DNTCaptchaText { get; set; } = string.Empty;
 
-        public string captchaHiddenText { get; set; } = string.Empty;
+        public string DNTCaptchaToken { get; set; } = string.Empty;
 
-        public string captchaHiddenToken { get; set; } = string.Empty;
+        public string DNTCaptchaInputText { get; set; } = string.Empty;
+        
     }
 }

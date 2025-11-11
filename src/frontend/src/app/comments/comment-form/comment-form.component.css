@@ -1,0 +1,16 @@
+input, textarea, button {
+  transition: all 0.2s ease-in-out;
+}
+
+::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+/*
+input:focus, textarea:focus {
+  outline: 2px solid transparent; 
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
+}
+*/

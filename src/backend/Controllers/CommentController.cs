@@ -1,8 +1,9 @@
-﻿using DNTCaptcha.Core;
-using CommentsApp.Data;
+﻿using CommentsApp.Data;
 using CommentsApp.Models;
-using Microsoft.AspNetCore.Mvc;
 using CommentsApp.Services;
+using DNTCaptcha.Core;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace CommentsApp.Controllers
 {
@@ -12,32 +13,35 @@ namespace CommentsApp.Controllers
     {
         private readonly ICommentRepository _commentRepository;
         private readonly IHtmlSanitizerService _htmlSanitizerService;
-        public CommentController(ICommentRepository commentRepository, IHtmlSanitizerService htmlSanitizerService)
+      
+        public CommentController(ICommentRepository commentRepository, IHtmlSanitizerService htmlSanitizerService 
+           )
         {
             _commentRepository = commentRepository;
             _htmlSanitizerService = htmlSanitizerService;
+          
         }
         [HttpPost]
-   //     [ValidateAntiForgeryToken]
-        [ValidateDNTCaptcha(
-            ErrorMessage = "Invalid security code.")]
-        //    ,Language = Language.English,
-        //    DisplayMode = DisplayMode.ShowDigits)]
+        [ValidateDNTCaptcha(ErrorMessage = "Please enter the security code as a number.")]
         public async Task<IActionResult> PostComment([FromForm] CommentCreateDto dto)
         {
+            Console.WriteLine(dto.DNTCaptchaInputText + " " + dto.DNTCaptchaText + " " + dto.DNTCaptchaToken);
+            
             if (!ModelState.IsValid)
             {
+                
                 return BadRequest(ModelState);
             }
-            var sanitizedText = _htmlSanitizerService.Sanitize(dto.Text);
-
+            var sanitizedText = _htmlSanitizerService.Sanitize(dto.TextMessage);
+          
             var comment = new Comment
             {
                 UserName = dto.UserName,
                 Email = dto.Email,
                 Text = sanitizedText,
                 ParentCommentId = dto.ParentCommentId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                HomePage = dto.HomePage
             };
 
             await _commentRepository.AddCommentAsync(comment);
@@ -46,9 +50,13 @@ namespace CommentsApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetComments([FromForm] PaginationParametersDto dto)
+        public async Task<IActionResult> GetComments(int pageIndex)
         {
-            var comments = await _commentRepository.GetCommentsAsync(dto.PageIndex, dto.PageSize);
+            var pageSize = 25;
+            if (pageIndex < 1) pageIndex = 1;
+            
+            var comments = await _commentRepository.GetCommentsAsync(pageIndex, pageSize);
+
             return Ok(comments);
         }
     }

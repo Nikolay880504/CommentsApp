@@ -31,8 +31,9 @@ namespace CommentsApp.Controllers
                 Max = 9999, 
                 Min = 1000 
             };
+            var captchaResponse = _apiProvider.CreateDNTCaptcha(captchaAttributes);
 
-            return _apiProvider.CreateDNTCaptcha(captchaAttributes);
+            return captchaResponse;
         }
     }
 }
