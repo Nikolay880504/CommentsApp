@@ -1,5 +1,4 @@
-﻿
-using DNTCaptcha.Core;
+﻿using DNTCaptcha.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommentsApp.Controllers
@@ -15,25 +14,25 @@ namespace CommentsApp.Controllers
             _apiProvider = apiProvider;
         }
 
-        [HttpGet("params")] 
+        [HttpGet("params")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true, Duration = 0)]
         public ActionResult<DNTCaptchaApiResponse> GetCaptchaParameters()
-        {   
+        {
             var captchaAttributes = new DNTCaptchaTagHelperHtmlAttributes
             {
-                BackColor = "#f7f3f3", 
-                ForeColor = "#111111", 
+                BackColor = "#f7f3f3",
+                ForeColor = "#111111",
                 FontName = "Tahoma",
-                FontSize = 18,
-
+                FontSize = 15,
                 Language = Language.English,
-                DisplayMode = DisplayMode.ShowDigits, 
-                Max = 9999, 
-                Min = 1000 
+                DisplayMode = DisplayMode.SumOfTwoNumbers,
+                Max = 9,
+                Min = 1,
+                TextBoxClass = "captcha-input",
+                RefreshButtonClass = "captcha-refresh"
             };
-            var captchaResponse = _apiProvider.CreateDNTCaptcha(captchaAttributes);
 
-            return captchaResponse;
+            return _apiProvider.CreateDNTCaptcha(captchaAttributes);
         }
     }
 }

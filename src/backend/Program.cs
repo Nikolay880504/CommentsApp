@@ -1,7 +1,6 @@
 using CommentsApp.Data;
 using CommentsApp.Services;
 using DNTCaptcha.Core;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 namespace CommentsApp
     
@@ -29,13 +28,13 @@ namespace CommentsApp
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<ICommentRepository, CommentRepository>();
             builder.Services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
-
+            
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddDNTCaptcha(options =>
-                options.UseCookieStorageProvider(SameSiteMode.None)
-                    .AbsoluteExpiration(minutes: 7)
+                    options.UseMemoryCacheStorageProvider()
+                    .AbsoluteExpiration(minutes: 10)
                     .WithEncryptionKey(encryptionKey)
                     .ShowThousandsSeparators(false)
                     .InputNames(
@@ -46,6 +45,7 @@ namespace CommentsApp
                             CaptchaInputName = "DNTCaptchaInputText"
                         })
                     .Identifier("commentsCaptcha"));
+            builder.Services.AddSingleton<FIleService>();
 
             var app = builder.Build();
 
@@ -64,11 +64,11 @@ namespace CommentsApp
             app.MapControllers();
             app.UseStaticFiles();
 
+            ApplyMigrations(app);
+
             app.Run();
         }
-
-            
-
+       
         static void ApplyMigrations(IHost app)
         {
             using (var scope = app.Services.CreateScope())

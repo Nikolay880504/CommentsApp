@@ -1,16 +1,170 @@
-input, textarea, button {
-  transition: all 0.2s ease-in-out;
+form {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-::placeholder {
-  color: #9ca3af;
-  opacity: 1;
+form h2 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-/*
-input:focus, textarea:focus {
-  outline: 2px solid transparent; 
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
+form > div[p-3] {
+  padding: 0.5rem;
+  border-left-width: 4px;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-*/
+
+.comment-buttons {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: -0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.comment-buttons button {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.comment-buttons button:hover {
+  background-color: #f3f4f6;
+  transform: scale(1.02);
+}
+
+.btn-italic {
+  font-style: italic;
+}
+
+.btn-bold {
+  font-weight: bold;
+}
+
+.comment-block textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 1rem;
+  resize: vertical;
+  margin-bottom: 0.25rem;
+  box-sizing: border-box;
+}
+
+.comment-block textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
+  outline: none;
+}
+
+.user-info-grid input {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-size: 1rem;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-info-grid input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5);
+  outline: none;
+}
+
+.user-info-grid {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.user-info-grid > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-info-grid label {
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+}
+
+.captcha-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.captcha-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.captcha-refresh {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.captcha-refresh:hover {
+  background-color: #f3f4f6;
+}
+
+.captcha-image {
+  width: 60px;
+  height: 40px;
+  border-radius: 0.5rem;
+  display: block;
+  object-fit: contain;
+}
+
+.captcha-input {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 1rem;
+  border: 1px solid #d1d5db;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+button[type="submit"] {
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  border: none;
+  background-color: #677897;
+  color: #110f0f;
+  box-shadow: 0 2px 6px rgba(118, 119, 160, 0.2);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #8790a6;
+}

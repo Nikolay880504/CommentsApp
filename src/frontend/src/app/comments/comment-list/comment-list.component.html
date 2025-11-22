@@ -1,59 +1,67 @@
-<div class="space-y-4">
-  <ng-container *ngTemplateOutlet="commentListTemplate; context: { $implicit: hierarchicalComments }"></ng-container>
+<div class="sort-controls">
+  <span>Sort by:</span>
+  <button (click)="setSort('userName')">User Name</button>
+  <button (click)="setSort('email')">E-mail</button>
+  <button (click)="setSort('createdAt')">Date</button>
+  <span class="sort-direction">
+    {{ sortDirection === 'asc' ? '▲' : '▼' }}
+  </span>
+</div>
+
+<div class="comment-list-container">
+  <ng-container
+    *ngTemplateOutlet="commentListTemplate; context: { $implicit: hierarchicalComments }">
+  </ng-container>
+</div>
+
+<!-- Lightbox -->
+<div *ngIf="lightboxImage" class="lightbox" (click)="closeImage()">
+  <img [src]="lightboxImage" alt="Preview" />
+  <span class="lightbox-close" (click)="closeImage(); $event.stopPropagation()">&times;</span>
 </div>
 
 <ng-template #commentListTemplate let-comments>
-  <div *ngFor="let comment of comments" class="comment-container relative">
-
-    <div [id]="'comment-' + comment.id"
-          class="p-4 rounded-lg border transition-all duration-300"
-          [ngClass]="{
-        'bg-blue-50 border-blue-200 shadow-lg': isReplyActive(comment.id),
-        'bg-white border-gray-200 shadow-md': !isReplyActive(comment.id)
-      }">
-      <div class="flex justify-between items-center mb-2">
-        <span class="font-bold text-lg text-gray-800">{{ comment.UserName }}</span>
-        <span class="text-xs text-gray-500">{{ comment.date | date: 'medium' }}</span>
-      </div>
-
-
-      <div class="text-sm text-gray-600 mb-3 space-y-1">
-        <p class="truncate">Email: {{ comment.Email }}</p>
-        <p *ngIf="comment.homePage">
-          Сайт:
-        
-          <a [href]="sanitizeUrl(comment.homePage)" target="_blank" [innerHTML]="sanitizeHtml(comment.homePage)"></a>
-        </p>
-      </div>    
-      <div class="comment-text text-gray-700 leading-relaxed mb-4"
-           [innerHTML]="sanitizeHtml(comment.Text)"></div>
-
+  <div *ngFor="let comment of comments" class="comment-container"
+       [ngClass]="{ 'active': isReplyActive(comment.id) }">
     
-      <div *ngIf="comment.attachedFilePath" class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
-        <p class="font-semibold text-sm mb-2 text-gray-700">Прикрепленный файл:</p>
-
-        <div *ngIf="comment.attachedFileType === 'image'">
-          <img [src]="sanitizeUrl(comment.attachedFilePath)"
-               alt="Прикрепленное изображение"
-               class="max-w-full h-auto rounded-md shadow-sm"
-               style="max-height: 200px;">
-        </div>
-        <div *ngIf="comment.attachedFileType === 'text'" class="p-2 bg-white border border-dashed rounded-md text-sm text-gray-600">
-          <p>Текстовый файл: 
-            <a [href]="sanitizeUrl(comment.attachedFilePath)" target="_blank" class="text-blue-500 hover:underline">Скачать</a>
-          </p>
-        </div>
-      </div>
-
-      <div class="text-right">
-        <button (click)="handleReply(comment.id)"
-                class="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline focus:outline-none transition duration-150 ease-in-out">
-          Ответить
-        </button>
-      </div>
+    <div class="comment-header">
+      <span class="user-name">{{ comment.userName }}</span>
+      <span class="comment-date">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
     </div>
-    <div *ngIf="comment.replies && comment.replies.length > 0" class="comment-replies ml-8 mt-4">
+
+    <div class="comment-meta">
+      <p>Email: {{ comment.email }}</p>
+      <p *ngIf="comment.homePage">
+        Website: 
+        <a [href]="sanitizeUrl(comment.homePage)" target="_blank" [innerHTML]="sanitizeHtml(comment.homePage)"></a>
+      </p>
+    </div>
+
+    <div class="comment-text" [innerHTML]="sanitizeHtml(comment.textMessage)"></div>
+
+    <div class="comment-attachment" *ngIf="comment.fullFileUrl && comment.isImage">
+      <img [src]="comment.fullFileUrl" (click)="openImage(comment.fullFileUrl)" class="preview-img">
+    </div>
+
+    <div *ngIf="comment.fullFileUrl && !comment.isImage">
+      <button (click)="downloadFile(comment.fullFileUrl)">Download File</button>
+    </div>
+
+    <div class="comment-actions">
+      <button (click)="handleReply(comment.id)">Reply</button>
+    </div>
+
+    <div class="comment-actions" *ngIf="comment.showDiscussionButton">
+      <button *ngIf="!comment.isThreadOpen" (click)="toggleThread(comment)">Show Discussion</button>
+      <button *ngIf="comment.isThreadOpen" (click)="toggleThread(comment)">Collapse Discussion</button>
+    </div>
+
+    <div *ngIf="comment.isThreadOpen" class="comment-replies">
       <ng-container *ngTemplateOutlet="commentListTemplate; context: { $implicit: comment.replies }"></ng-container>
+      <div class="comment-actions" *ngIf="comment.hasMoreReplies">
+        <button (click)="loadMoreReplies(comment)">Load More Replies</button>
+      </div>
     </div>
-  </div> 
+
+  </div>
 </ng-template>

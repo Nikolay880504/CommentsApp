@@ -3,6 +3,7 @@ using System;
 using CommentsApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CommentsApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251113174326_DeleteParentComment")]
+    partial class DeleteParentComment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -51,7 +54,18 @@ namespace CommentsApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentCommentId");
+
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("CommentsApp.Models.Comment", b =>
+                {
+                    b.HasOne("CommentsApp.Models.Comment", "ParentComment")
+                        .WithMany()
+                        .HasForeignKey("ParentCommentId");
+
+                    b.Navigation("ParentComment");
                 });
 #pragma warning restore 612, 618
         }

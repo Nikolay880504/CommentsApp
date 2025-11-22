@@ -1,6 +1,3 @@
-// comment-form.component.ts
-
-// comment-form.component.ts
 
 import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
@@ -8,8 +5,8 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { CommentService } from '../../comment.service';
 import { Comment } from '../../comment.model';
-import { finalize, catchError, throwError } from 'rxjs';
-import { HttpErrorResponse, HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-comment-form',
@@ -37,28 +34,28 @@ export class CommentFormComponent implements OnInit, OnChanges {
   selectedFile: File | null = null;
   filePreviewUrl: SafeUrl | null = null;
   fileError: string | null = null;
+  captchaError: string | null = null;
 
   private readonly MAX_IMAGE_WIDTH = 320;
   private readonly MAX_IMAGE_HEIGHT = 240;
-  private readonly MAX_TEXT_FILE_SIZE = 102400; // 100 КБ
+  private readonly MAX_TEXT_FILE_SIZE = 102400; // 100 KB
 
-  private readonly USERNAME_REGEX = /^[a-zA-Z0-9]+$/;
+  private readonly USERNAME_REGEX = /^[a-zA-Zа-яА-Я0-9]+$/;
   private readonly URL_REGEX = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
-  private readonly CAPTCHA_REGEX = /^[0-9]{4}$/;
+  private readonly CAPTCHA_REGEX = /^[0-9]{1,2}$/;
   private readonly ALLOWED_TAGS = ['A', 'CODE', 'I', 'STRONG'];
 
   constructor(
     private fb: FormBuilder,
     private commentService: CommentService,
     private sanitizer: DomSanitizer,
-    //private http: HttpClient
   ) {
     this.commentForm = this.fb.group({
       userName: ['', [Validators.required, Validators.maxLength(100), Validators.pattern(this.USERNAME_REGEX)]],
       email: ['', [Validators.required, Validators.maxLength(50), Validators.email]],
       homePage: ['', [Validators.maxLength(250), this.urlValidator.bind(this)]],
       textMessage: ['', [Validators.required, Validators.maxLength(4096)]],
-      captchaInputText: ['', [Validators.required, Validators.pattern(this.CAPTCHA_REGEX), Validators.minLength(4), Validators.maxLength(4)]]
+      captchaInputText: ['', [Validators.required, Validators.pattern(this.CAPTCHA_REGEX)]]
     });
   }
 
@@ -68,8 +65,7 @@ export class CommentFormComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['parentCommentId'] && changes['parentCommentId'].currentValue === null) {
-      // При необходимости можно сбросить форму
-      // this.resetFormState();
+      this.resetFormState();
     }
   }
 
@@ -80,6 +76,59 @@ export class CommentFormComponent implements OnInit, OnChanges {
   private urlValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) return null;
     return this.URL_REGEX.test(control.value) ? null : { pattern: true, url: true };
+  }
+
+  insertTag(tag: string): void {
+    const textarea = document.getElementById('Text') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = this.commentForm.get('textMessage')?.value || '';
+
+    let openTag = '';
+    let closeTag = '';
+
+    switch (tag) {
+      case 'i':
+        openTag = '<i>';
+        closeTag = '</i>';
+        break;
+      case 'strong':
+        openTag = '<strong>';
+        closeTag = '</strong>';
+        break;
+      case 'code':
+        openTag = '<code>';
+        closeTag = '</code>';
+        break;
+      case 'a':
+        const url = prompt('Enter URL for the link:');
+        if (!url) return;
+        openTag = `<a href="${url}" target="_blank" rel="noopener noreferrer">`;
+        closeTag = '</a>';
+        break;
+    }
+
+    const newValue = value.substring(0, start) + openTag + value.substring(start, end) + closeTag + value.substring(end);
+    this.commentForm.patchValue({ textMessage: newValue });
+
+    const pos = start + openTag.length + (end - start) + closeTag.length;
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(pos, pos);
+    });
+  }
+
+  insertLink(): void {
+    const control = this.commentForm.get('textMessage');
+    if (!control) return;
+
+    const currentText = control.value || '';
+    const linkTemplate = '<a href="https://example.com">link</a>';
+    control.setValue(currentText + linkTemplate);
+    control.markAsDirty();
+    control.markAsTouched();
   }
 
   public loadNewCaptcha(): void {
@@ -95,13 +144,11 @@ export class CommentFormComponent implements OnInit, OnChanges {
         this.captchaImageUrl = this.sanitizer.bypassSecurityTrustResourceUrl(response.dntCaptchaImgUrl);
         this.captchaHiddenText = response.dntCaptchaTextValue;
         this.captchaHiddenToken = response.dntCaptchaTokenValue;
-        this.requestVerificationToken = response.__RequestVerificationToken || '';
         this.submitError = null;
-  
       },
       error: (err: HttpErrorResponse) => {
-        console.error('Ошибка при загрузке CAPTCHA:', err);
-        this.submitError = 'Не удалось загрузить CAPTCHA с сервера.';
+        console.error('Error loading CAPTCHA:', err);
+        this.submitError = 'Failed to load CAPTCHA from server.';
       }
     });
   }
@@ -117,13 +164,14 @@ export class CommentFormComponent implements OnInit, OnChanges {
 
     if (file.type.startsWith('image/')) {
       const validImageFormats = ['image/jpeg', 'image/gif', 'image/png'];
-      if (!validImageFormats.includes(file.type)) return this.setFileError('Недопустимый формат изображения. JPG, GIF, PNG.');
+      if (!validImageFormats.includes(file.type)) return this.setFileError('Invalid image format. JPG, GIF, PNG.');
       this.resizeImage(file);
     } else if (file.type === 'text/plain') {
-      if (file.size > this.MAX_TEXT_FILE_SIZE) return this.setFileError(`Текстовый файл не должен превышать ${this.MAX_TEXT_FILE_SIZE / 1024} КБ.`);
-      this.fileError = 'Текстовый файл загружен (макс. 100 КБ).';
+      if (file.size > this.MAX_TEXT_FILE_SIZE)
+        return this.setFileError(`Text file must not exceed ${this.MAX_TEXT_FILE_SIZE / 1024} KB.`);
+      this.fileError = null;
     } else {
-      this.setFileError('Неподдерживаемый тип файла. JPG, GIF, PNG или TXT.');
+      this.setFileError('Unsupported file type. JPG, GIF, PNG, or TXT.');
     }
   }
 
@@ -179,6 +227,12 @@ export class CommentFormComponent implements OnInit, OnChanges {
     if (fileInput) fileInput.value = '';
   }
 
+  clearReply(): void {
+    this.parentCommentId = 0;
+    this.commentForm.get('textMessage')?.reset();
+    this.formReset.emit();
+  }
+
   private sanitizeText(text: string): string {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = text;
@@ -211,61 +265,77 @@ export class CommentFormComponent implements OnInit, OnChanges {
     this.commentForm.markAllAsTouched();
 
     if (this.commentForm.invalid) {
-      this.submitError = 'Пожалуйста, заполните все обязательные поля корректно.';
+      this.submitError = 'Please fill all required fields correctly.';
       return;
     }
 
     const formValue = this.commentForm.value;
-    
+
     const comment: Comment = {
-    userName: formValue.userName,
-    email: formValue.email,
-    textMessage: this.sanitizeText(formValue.textMessage),
-    homePage: formValue.homePage || undefined,
-    dNTCaptchaText: this.captchaHiddenText,
-    dNTCaptchaToken: this.captchaHiddenToken,
-    dNTCaptchaInputText: formValue.captchaInputText
-  };
+      userName: formValue.userName,
+      email: formValue.email,
+      textMessage: this.sanitizeText(formValue.textMessage),
+      homePage: formValue.homePage || undefined,
+      dNTCaptchaText: this.captchaHiddenText,
+      dNTCaptchaToken: this.captchaHiddenToken,
+      dNTCaptchaInputText: formValue.captchaInputText
+    };
 
-  if (this.parentCommentId !== null) {
-    comment.parentCommentId = this.parentCommentId;
-  }
+    if (this.parentCommentId !== null) {
+      comment.parentCommentId = this.parentCommentId;
+    }
 
-  if (this.selectedFile) {
-    comment.attachedFile = this.selectedFile; 
-  }
- 
-   this.commentService.addComment(comment).pipe(
-  catchError(err => {
-    this.submitError = 'Ошибка при отправке комментария. Попробуйте позже.';
-    console.error('Submission error:', err);
-    return throwError(() => new Error('Submission failed'));
-  })
-).subscribe({
-  next: (res) => {
-    this.submissionMessage = 'Комментарий успешно отправлен!';
-    this.resetFormState();
-    this.commentAdded.emit(res);
-  }
-});
+    if (this.selectedFile) {
+      comment.attachedFile = this.selectedFile;
+    }
+
+    this.commentService.addComment(comment).subscribe({
+      next: (res) => {
+        this.submissionMessage = 'Comment submitted successfully!';
+        this.resetFormState();
+        this.commentAdded.emit(res);
+      },
+      error: (err) => {
+        console.error('Submission error:', err);
+        if (err.status === 400 && err.error) {
+          this.captchaError = err.error["DNTCaptchaInputText"]?.[0];
+          if (this.captchaError) {
+            this.submitError = this.captchaError;
+            return;
+          }
+        }
+
+        this.submitError = 'Error submitting comment. Please try again later.';
+      }
+    });
   }
 
   private resetFormState(): void {
     this.commentForm.reset({
-      UserName: '',
-      Email: '',
+      userName: '',
+      email: '',
       homePage: '',
-      Text: '',
+      textMessage: '',
       captchaInputText: ''
     });
+
+    this.commentForm.markAsPristine();
+    this.commentForm.markAsUntouched();
+
     this.selectedFile = null;
     this.filePreviewUrl = null;
     this.fileError = null;
-    this.loadNewCaptcha();
-    this.formReset.emit();
-  }
 
-  get c() {
-    return this.commentForm.controls;
+    this.submitError = null;
+    this.captchaError = null;
+
+    this.parentCommentId = 0;
+
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+
+    this.loadNewCaptcha();
+
+    this.formReset.emit();
   }
 }

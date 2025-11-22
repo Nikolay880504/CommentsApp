@@ -1,0 +1,25 @@
+commentMap.forEach(commentNode => {
+    const parentId = commentNode.parentCommentId;
+
+    if (parentId && parentId !== 0) {
+      const parent = commentMap.get(parentId);
+      if (parent) {
+        parent.replies!.unshift(commentNode); // добавляем в начало
+        parent.hasMoreReplies = true // инициализация
+      } 
+      else {
+      rootComments.push(commentNode);
+    }
+    } 
+  });
+
+  return rootComments;
+}
+.comment-attachment {
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 1rem;
+  padding: 0.75rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
