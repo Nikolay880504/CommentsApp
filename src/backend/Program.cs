@@ -10,7 +10,7 @@ namespace CommentsApp
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend",
@@ -20,7 +20,7 @@ namespace CommentsApp
                         .AllowAnyMethod()
                         .AllowCredentials()); 
             });
-
+            
             var encryptionKey = builder.Configuration["DNTCaptcha:EncryptionKey"]
                                  ?? throw new InvalidOperationException("DNTCaptcha EncryptionKey not found.");
 
@@ -33,7 +33,7 @@ namespace CommentsApp
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddDNTCaptcha(options =>
-                    options.UseMemoryCacheStorageProvider()
+                   options.UseMemoryCacheStorageProvider()
                     .AbsoluteExpiration(minutes: 10)
                     .WithEncryptionKey(encryptionKey)
                     .ShowThousandsSeparators(false)
@@ -63,9 +63,7 @@ namespace CommentsApp
             app.UseAuthorization();
             app.MapControllers();
             app.UseStaticFiles();
-
             ApplyMigrations(app);
-
             app.Run();
         }
        

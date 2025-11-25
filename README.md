@@ -1,5 +1,6 @@
-**Project Description:**  
-This project is a Comments App that allows users to post comments, reply to other comments, and attach files or images. It supports hierarchical comment threads and includes a lightweight captcha verification to prevent spam.
+# Comments App
+
+**Project Description:** This project is a Comments App that allows users to post comments, reply to other comments, and attach files or images. It supports hierarchical comment threads and includes a lightweight captcha verification to prevent spam.
 
 **Features:**
 - Add, view, and reply to comments.
@@ -18,3 +19,9 @@ This project is a Comments App that allows users to post comments, reply to othe
 - Database: SQL Server / SQLite
 - File storage: Local `wwwroot/uploads` folder
 - Security: Sanitization of user input, safe URLs
+
+**How to run the project:**
+- Clone the repository.
+- Run the project using docker-compose up.
+- Configuration:
+   The project already includes a default encryption key for DNTCaptcha in appsettings.json for development purposes, so no additional configuration is required.
