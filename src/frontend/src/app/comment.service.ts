@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-//import { environment } from './environments/environment';
+import { environment } from './environments/environment';
 import { Comment, CaptchaResponse, CommentListResponse, RepliesResponse } from './comment.model';
 import { catchError } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
@@ -12,18 +12,12 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class CommentService {
-  /*
+  
   private readonly baseHost = environment.apiHost;
   private readonly addCommentsUrl = `${this.baseHost}/api/comment`;
   private readonly captchaParamsUrl = `${this.baseHost}/api/captcha/params`;
   private readonly getCommentsUrl = `${this.baseHost}/api/comment/pageIndex`;
-  */
-
-  private readonly baseHost = 'http://localhost:5000'; 
-  private readonly addCommentsUrl = `${this.baseHost}/api/comment`;
-  private readonly captchaParamsUrl = `${this.baseHost}/api/captcha/params`;
-  private readonly getCommentsUrl = `${this.baseHost}/api/comment/pageIndex`;
-
+ 
   constructor(private http: HttpClient) {}
     
  getCaptcha(): Observable<CaptchaResponse> {
