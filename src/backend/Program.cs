@@ -15,7 +15,8 @@ namespace CommentsApp
             {
                 options.AddPolicy("AllowFrontend",
                     builder => builder
-                        .WithOrigins("http://localhost:4200")
+                        .WithOrigins("http://localhost:4200",
+                                     "http://13.62.20.52:4200")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials()); 
@@ -58,7 +59,6 @@ namespace CommentsApp
                 app.MapOpenApi();
             }
 
-            app.UseHttpsRedirection();
             app.UseCors("AllowFrontend");
             app.UseAuthorization();
             app.MapControllers();
